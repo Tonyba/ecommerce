@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash } from "lucide-react";
 import * as z from "zod";
 
-import { BillboardType, StoreType } from "@/utils/types";
+import { BillboardType } from "@/utils/types";
 import Heading from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -20,12 +20,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "react-hot-toast";
-import { deleteStore, updateStore } from "@/api/store";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import AlertModal from "@/components/modals/alert-modal";
-import ApiAlert from "@/components/ui/api-alert";
-import { API_URL } from "@/utils/constants";
 import ImageUpload from "@/components/ui/image-upload";
 import {
   createBillboard,
@@ -47,6 +44,7 @@ type BillboardFormValues = z.infer<typeof formSchema>;
 const BillboardForm: FC<BillboardFormProps> = ({ initialData }) => {
   const params = useParams();
   const router = useRouter();
+  const { userId } = useAuth();
 
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -71,11 +69,17 @@ const BillboardForm: FC<BillboardFormProps> = ({ initialData }) => {
         await updateBillboard(params.billboardId || "", {
           ...data,
           StoreId: params.storeId,
+          userId: userId || "",
         });
       } else {
-        await createBillboard({ ...data, StoreId: params.storeId });
+        await createBillboard({
+          ...data,
+          StoreId: params.storeId,
+          userId: userId || "",
+        });
       }
       router.refresh();
+      router.push(`/${params.storeId}/billboards`);
       toast.success(toastMessage);
     } catch (error) {
       toast.error("Something went wrong.");
@@ -87,9 +91,9 @@ const BillboardForm: FC<BillboardFormProps> = ({ initialData }) => {
   const onDelete = async () => {
     try {
       setLoading(true);
-      await deleteBillboard(params.billboardId);
+      await deleteBillboard(params.billboardId, userId || "", params.storeId);
       router.refresh();
-      router.push("/");
+      router.push(`/${params.storeId}/billboards`);
       toast.success("Billboard deleted.");
     } catch (error) {
       toast.error("Make sure you removed all categories using this billboard");
@@ -168,7 +172,6 @@ const BillboardForm: FC<BillboardFormProps> = ({ initialData }) => {
           </Button>
         </form>
       </Form>
-      <Separator />
     </>
   );
 };

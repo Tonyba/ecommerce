@@ -1,16 +1,18 @@
 import { Router } from "express";
 import {
   createBillboard,
-  deleteStore,
+  deleteBillboard,
   getBillboard,
-  updateStore,
+  getBillboards,
+  updateBillBoard,
 } from "../controller/billboard.controller.js";
 
 const router = Router();
 
 router.post("/", createBillboard);
 router.get("/:id", getBillboard);
-router.delete("/:id", deleteStore);
-router.put("/:id", updateStore);
+router.get("/all/:storeId", getBillboards);
+router.delete("/:id", deleteBillboard);
+router.put("/:id", updateBillBoard);
 
 export default router;
